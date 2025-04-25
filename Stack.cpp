@@ -86,16 +86,7 @@ Stack::Stack(const ValueType* valueArray, size_t arraySize, StackContainer conta
 }
 
 Stack::Stack(const Stack& other) : _containerType(other._containerType) {
-    switch (_containerType) {
-        case StackContainer::Vector:
-            _pimpl = new VectorStack(*static_cast<const VectorStack*>(other._pimpl));
-            break;
-        case StackContainer::List:
-            _pimpl = new ListStack(*static_cast<const ListStack*>(other._pimpl));
-            break;
-        default:
-            throw std::runtime_error("Unknown container type");
-    }
+    *this = other;
 }
 
 Stack& Stack::operator=(const Stack& other) {
@@ -103,10 +94,10 @@ Stack& Stack::operator=(const Stack& other) {
         IStackImplementation* temp = nullptr;
         switch (other._containerType) {
             case StackContainer::Vector:
-                temp = new VectorStack(*static_cast<const VectorStack*>(other._pimpl));
+                temp = new VectorStack(*dynamic_cast<const VectorStack*>(other._pimpl));
                 break;
             case StackContainer::List:
-                temp = new ListStack(*static_cast<const ListStack*>(other._pimpl));
+                temp = new ListStack(*dynamic_cast<const ListStack*>(other._pimpl));
                 break;
         }
         
@@ -117,9 +108,8 @@ Stack& Stack::operator=(const Stack& other) {
     return *this;
 }
 
-Stack::Stack(Stack&& other) noexcept
-    : _pimpl(other._pimpl), _containerType(other._containerType) {
-    other._pimpl = nullptr;
+Stack::Stack(Stack&& other) noexcept {
+    *this = std::move(other);
 }
 
 Stack& Stack::operator=(Stack&& other) noexcept {
